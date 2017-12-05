@@ -25,6 +25,7 @@
 /// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
+
 import XCTest
 import Quick
 import Nimble
@@ -34,64 +35,65 @@ class PlayerUpgraderSpec: QuickSpec {
   
   override func spec() {
     
+    var player: Player!
     var upgrader: PlayerUpgrader!
     beforeEach {
-      upgrader = PlayerUpgrader()
+      player = try! Player(lives: 0, levelsComplete: 0)
+      upgrader = PlayerUpgrader(player: player)
     }
     
     describe(".upgradeLives()") {
       
-      context("when player is added to the player upgrader") {
+      func expectUser(toHaveLives expectedLives: Int, afterUpgradingLives upgradeLives: Int) {
+        try? upgrader.upgradeLives(by: upgradeLives)
+        expect(player.lives).to(equal(expectedLives))
+      }
+      
+      context("when the player has no lives") {
         
-        var player: Player!
-        beforeEach {
-          player = Player()
-          upgrader.player = player
-        }
-        
-        func expectUser(toHaveLives expectedLives: Int, afterUpgradingLives upgradeLives: Int) {
-          try? upgrader.upgradeLives(by: upgradeLives)
-          expect(player.lives).to(equal(expectedLives))
-        }
-        
-        context("when the player has no lives") {
-          
-          beforeEach {
-            player.lives = 0
-          }
-          
-          context("with an upgrade amount of 0") {
-            it("should incement the player's lives by 0") {
-              expectUser(toHaveLives: 0, afterUpgradingLives: 0)
-            }
-          }
-          
-          context("with an upgrade amount that is less than the maximum lives") {
-            it("should incement the player's lives by upgrade amount") {
-              expectUser(toHaveLives: 1, afterUpgradingLives: 1)
-            }
-          }
-          
-          context("with an upgrade amount that is more than the maximum lives") {
-            it("should set player's lives to the maximum lives") {
-              expectUser(toHaveLives: Player.maximumLives, afterUpgradingLives: Player.maximumLives+1)
-            }
+        context("with an upgrade amount of 0") {
+          it("should incement the player's lives by 0") {
+            expectUser(toHaveLives: 0, afterUpgradingLives: 0)
           }
         }
         
-        context("when the player's lives are full") {
-          fit("should not change the value of the player's lives") {
-            player.lives = Player.maximumLives
-            expectUser(toHaveLives: Player.maximumLives, afterUpgradingLives:1)
+        context("with an upgrade amount that is less than the maximum lives") {
+          it("should incement the player's lives by upgrade amount") {
+            expectUser(toHaveLives: 1, afterUpgradingLives: 1)
+          }
+        }
+        
+        context("with an upgrade amount that is negative") {
+          fit("should throw an error") {
+            expect{try upgrader.upgradeLives(by: -1)}.to(throwError())
+          }
+        }
+        
+        context("with an upgrade amount that is more than the maximum lives") {
+          it("should set player's lives to the maximum lives") {
+            expectUser(toHaveLives: Player.maximumLives, afterUpgradingLives: Player.maximumLives+1)
           }
         }
       }
       
-      context("when player upgrader doesn't have a player") {
-        xit("should throw an error") {
-          upgrader.player = nil
-          expect{try upgrader.upgradeLives(by: 1)}.to(throwError())
+      context("when the player's lives are full") {
+        
+        beforeEach {
+          try? player.set(lives: Player.maximumLives)
         }
+        
+        xit("should not change the value of the player's lives") {
+          expectUser(toHaveLives: Player.maximumLives, afterUpgradingLives:1)
+        }
+      }
+    }
+    
+    describe(".upgradeLevel()") {
+
+      it("should increment the player's level by 1") {
+        let levelsComplete = player.levelsComplete
+        upgrader.upgradeLevel()
+        expect(player.levelsComplete).to(equal(levelsComplete+1))
       }
     }
   }

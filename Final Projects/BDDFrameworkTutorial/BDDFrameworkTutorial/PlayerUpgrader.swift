@@ -28,25 +28,19 @@
 
 import Foundation
 
-enum UpgradeError: Error {
-  case invalidUser
-}
-
-struct PlayerUpgrader {
-  var player: Player?
+class PlayerUpgrader {
+  private let player: Player
   
-  func upgradeLives(by lives: Int) throws {
-    guard let player = player else {
-      throw UpgradeError.invalidUser
-    }
-    let totalLives = player.lives + lives
-    player.lives = min(totalLives, Player.maximumLives)
+  init(player: Player) {
+    self.player = player
   }
   
-  func upgradeLevel() throws {
-    guard let player = player else {
-      throw UpgradeError.invalidUser
-    }
-    player.levelsComplete += 1
+  func upgradeLives(by lives: Int) throws {
+    let totalLives = player.lives + lives
+    try player.set(lives: min(totalLives, Player.maximumLives))
+  }
+  
+  func upgradeLevel() {
+    try! player.set(levelsComplete: player.levelsComplete + 1)
   }
 }

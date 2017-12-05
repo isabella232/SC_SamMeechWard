@@ -28,9 +28,46 @@
 
 import Foundation
 
+enum PlayerError: Error {
+  case invalidLives(Int)
+  case invalidLevelsComplete(Int)
+}
+
 class Player {
   static let maximumLives = 3
   
-  var lives: Int = 0
-  var levelsComplete: Int = 0
+  private var _lives: Int
+  var lives: Int {
+    return _lives
+  }
+  private var _levelsComplete: Int
+  var levelsComplete: Int {
+    return _levelsComplete
+  }
+  
+  init(lives: Int, levelsComplete: Int) throws {
+    guard lives >= 0 else {
+      throw PlayerError.invalidLives(lives)
+    }
+    guard levelsComplete >= 0 else {
+      throw PlayerError.invalidLevelsComplete(levelsComplete)
+    }
+    _lives = lives
+    _levelsComplete = levelsComplete
+  }
+  
+  func set(lives: Int) throws {
+    guard lives >= 0 else {
+      throw PlayerError.invalidLives(lives)
+    }
+    _lives = lives
+  }
+  
+  func set(levelsComplete: Int) throws {
+    guard levelsComplete >= 0 else {
+      throw PlayerError.invalidLevelsComplete(levelsComplete)
+    }
+    _levelsComplete = levelsComplete
+  }
+  
 }

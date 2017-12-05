@@ -37,54 +37,43 @@ class PlayerUpgraderTests: XCTestCase {
   
   override func setUp() {
     super.setUp()
-    upgrader = PlayerUpgrader()
-    player = Player()
-    upgrader.player = player
+    player = try! Player(lives: 0, levelsComplete: 0)
+    upgrader = PlayerUpgrader(player: player)
   }
   
   // MARK: Player Lives
   
   func test_addMoreLivesWith0Lives_Adds0NewLivesToPlayer() {
-    player.lives = 0
     try? upgrader.upgradeLives(by: 0)
     XCTAssertEqual(player.lives, 0);
   }
   
   func test_addMoreLivesWithXLives_AddsXNumberOfLivesToPlayer_WhenPlayerStartsWithNoLives() {
-    player.lives = 0
     try? upgrader.upgradeLives(by: 1)
     XCTAssertEqual(player.lives, 1);
   }
   
+  func test_addMoreLivesWithNegativeLives_ThrowsAnError() {
+    XCTAssertThrowsError(try upgrader.upgradeLives(by: -1))
+  }
+  
   func test_addMoreLivesWithMoreThanMaximumNumberLives_SetsPlayersLivesToMaximumNumberOfLives_WhenPlayerStartsWithNoLives() {
-    player.lives = 0
     try? upgrader.upgradeLives(by: Player.maximumLives+1)
     XCTAssertEqual(player.lives, Player.maximumLives);
   }
   
   func test_addMoreLives_SetsPlayersLivesToMaximumNumberOfLives_WhenPlayerStartsWithMaximumLives() {
-    player.lives = Player.maximumLives
+    try? player.set(lives: Player.maximumLives)
     try? upgrader.upgradeLives(by: 1)
     XCTAssertEqual(player.lives, Player.maximumLives);
   }
   
-  func test_addMoreLives_ThrowsAnError_WhenCalledWithoutAPlayer() {
-    upgrader.player = nil
-    XCTAssertThrowsError(try upgrader.upgradeLives(by: 1))
-  }
-  
-  // MARK: User Lives
+  // MARK: Player Levels Complete
   
   func test_upgradeLevel_Adds1ToThePlayersLevelsComplete() {
-    player.levelsComplete = 0
-    try? upgrader.upgradeLevel()
+    try? player.set(levelsComplete: 0)
+    upgrader.upgradeLevel()
     XCTAssertEqual(player.levelsComplete, 1);
-    
-  }
-  
-  func test_upgradeLevel_ThrowsAnError_WhenCalledWithoutAPlayer() {
-    upgrader.player = nil
-    XCTAssertThrowsError(try upgrader.upgradeLevel())
   }
   
 }
