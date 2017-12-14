@@ -38,7 +38,7 @@ class PlayerUpgraderSpec: QuickSpec {
     var player: Player!
     var upgrader: PlayerUpgrader!
     beforeEach {
-      player = try! Player(lives: 0, levelsComplete: 0)
+      player = Player()
       upgrader = PlayerUpgrader(player: player)
     }
     
@@ -64,7 +64,7 @@ class PlayerUpgraderSpec: QuickSpec {
         }
         
         context("with an upgrade amount that is negative") {
-          fit("should throw an error") {
+          it("should throw an error") {
             expect{try upgrader.upgradeLives(by: -1)}.to(throwError())
           }
         }
@@ -82,7 +82,7 @@ class PlayerUpgraderSpec: QuickSpec {
           try? player.set(lives: Player.maximumLives)
         }
         
-        xit("should not change the value of the player's lives") {
+        it("should not change the value of the player's lives") {
           expectUser(toHaveLives: Player.maximumLives, afterUpgradingLives:1)
         }
       }

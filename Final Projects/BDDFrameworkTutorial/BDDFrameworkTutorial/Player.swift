@@ -36,24 +36,13 @@ enum PlayerError: Error {
 class Player {
   static let maximumLives = 3
   
-  private var _lives: Int
+  private var _lives = 0
   var lives: Int {
     return _lives
   }
-  private var _levelsComplete: Int
+  private var _levelsComplete = 0
   var levelsComplete: Int {
     return _levelsComplete
-  }
-  
-  init(lives: Int, levelsComplete: Int) throws {
-    guard lives >= 0 else {
-      throw PlayerError.invalidLives(lives)
-    }
-    guard levelsComplete >= 0 else {
-      throw PlayerError.invalidLevelsComplete(levelsComplete)
-    }
-    _lives = lives
-    _levelsComplete = levelsComplete
   }
   
   func set(lives: Int) throws {
@@ -63,10 +52,7 @@ class Player {
     _lives = lives
   }
   
-  func set(levelsComplete: Int) throws {
-    guard levelsComplete >= 0 else {
-      throw PlayerError.invalidLevelsComplete(levelsComplete)
-    }
+  func set(levelsComplete: Int) {
     _levelsComplete = levelsComplete
   }
   

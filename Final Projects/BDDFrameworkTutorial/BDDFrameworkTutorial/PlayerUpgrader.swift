@@ -41,6 +41,6 @@ class PlayerUpgrader {
   }
   
   func upgradeLevel() {
-    try! player.set(levelsComplete: player.levelsComplete + 1)
+    player.set(levelsComplete: player.levelsComplete + 1)
   }
 }

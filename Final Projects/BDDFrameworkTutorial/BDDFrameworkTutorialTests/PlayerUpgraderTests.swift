@@ -37,7 +37,7 @@ class PlayerUpgraderTests: XCTestCase {
   
   override func setUp() {
     super.setUp()
-    player = try! Player(lives: 0, levelsComplete: 0)
+    player = Player()
     upgrader = PlayerUpgrader(player: player)
   }
   
@@ -71,7 +71,6 @@ class PlayerUpgraderTests: XCTestCase {
   // MARK: Player Levels Complete
   
   func test_upgradeLevel_Adds1ToThePlayersLevelsComplete() {
-    try? player.set(levelsComplete: 0)
     upgrader.upgradeLevel()
     XCTAssertEqual(player.levelsComplete, 1);
   }
