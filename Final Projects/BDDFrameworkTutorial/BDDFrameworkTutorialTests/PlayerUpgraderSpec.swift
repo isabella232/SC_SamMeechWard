@@ -79,7 +79,9 @@ class PlayerUpgraderSpec: QuickSpec {
       context("when the player's lives are full") {
         
         beforeEach {
-          try? player.set(lives: Player.maximumLives)
+          try? upgrader.upgradeLives(by: 1)
+          try? upgrader.upgradeLives(by: 1)
+          try? upgrader.upgradeLives(by: 1)
         }
         
         it("should not change the value of the player's lives") {

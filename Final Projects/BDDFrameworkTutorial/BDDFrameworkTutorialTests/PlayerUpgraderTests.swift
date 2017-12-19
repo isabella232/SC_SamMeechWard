@@ -63,7 +63,9 @@ class PlayerUpgraderTests: XCTestCase {
   }
   
   func test_addMoreLives_SetsPlayersLivesToMaximumNumberOfLives_WhenPlayerStartsWithMaximumLives() {
-    try? player.set(lives: Player.maximumLives)
+    try? upgrader.upgradeLives(by: 1)
+    try? upgrader.upgradeLives(by: 1)
+    try? upgrader.upgradeLives(by: 1)
     try? upgrader.upgradeLives(by: 1)
     XCTAssertEqual(player.lives, Player.maximumLives);
   }
