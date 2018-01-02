@@ -1,15 +1,15 @@
 ///// Copyright (c) 2017 Razeware LLC
-/// 
+///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
 /// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 /// copies of the Software, and to permit persons to whom the Software is
 /// furnished to do so, subject to the following conditions:
-/// 
+///
 /// The above copyright notice and this permission notice shall be included in
 /// all copies or substantial portions of the Software.
-/// 
+///
 /// Notwithstanding the foregoing, you may not use, copy, modify, merge, publish,
 /// distribute, sublicense, create a derivative work, and/or sell copies of the
 /// Software in any work that is designed, intended, or marketed for pedagogical or
@@ -17,7 +17,7 @@
 /// or information technology.  Permission for such use, copying, modification,
 /// merger, publication, distribution, sublicensing, creation of derivative works,
 /// or sale is expressly withheld.
-/// 
+///
 /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 /// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -52,13 +52,13 @@ class PlayerUpgraderSpec: QuickSpec {
       context("when the player has no lives") {
         
         context("with an upgrade amount of 0") {
-          it("should incement the player's lives by 0") {
+          it("should increment the player's lives by 0") {
             expectUser(toHaveLives: 0, afterUpgradingLives: 0)
           }
         }
         
         context("with an upgrade amount that is less than the maximum lives") {
-          it("should incement the player's lives by upgrade amount") {
+          it("should increment the player's lives by upgrade amount") {
             expectUser(toHaveLives: 1, afterUpgradingLives: 1)
           }
         }
@@ -79,9 +79,7 @@ class PlayerUpgraderSpec: QuickSpec {
       context("when the player's lives are full") {
         
         beforeEach {
-          try? upgrader.upgradeLives(by: 1)
-          try? upgrader.upgradeLives(by: 1)
-          try? upgrader.upgradeLives(by: 1)
+          try? upgrader.upgradeLives(by: Player.maximumLives)
         }
         
         it("should not change the value of the player's lives") {
@@ -91,7 +89,7 @@ class PlayerUpgraderSpec: QuickSpec {
     }
     
     describe(".upgradeLevel()") {
-
+      
       it("should increment the player's level by 1") {
         let levelsComplete = player.levelsComplete
         upgrader.upgradeLevel()
@@ -100,3 +98,4 @@ class PlayerUpgraderSpec: QuickSpec {
     }
   }
 }
+
