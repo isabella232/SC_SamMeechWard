@@ -17,141 +17,68 @@ Writing tests using `XCTest` alone can make it difficult to organize your tests 
 
 ## Introduction
 
-Hey what’s up everybody, this is Sam. In this video, I'm going to show you how to test your iOS apps using a BDD testing framework.
-
-We'll take a look at how to structure your tests for better code reuse and readability using the `Quick` and `Nimble` BDD frameworks for swift. and we'll go over some best practices along the way.
-
-Let's start with a brief overview of **BDD**
-
-## Talking Head
-
-### BDD 
+Hey what’s up everybody, this is Brian and in this video, I'm going to show you how to test your iOS apps using a BDD testing framework.
 
 _BDD_ or _Behavior Driven Development_ is a process that emerged from test-driven development in 2006. The topic of BDD covers the entire life cycle of the app development process, from planning the project, to writing the code.
 
 BDD encourages you to specify the behavior of your app in terms of user stories which are broken down into scenarios that can be built and tested. 
 
-The Topic of BDD is big enough that entire books have been written on the subject, but for today, we're just interested in a one part of BDD, testing with BDD frameworks.
+BDD is broken down into three steps: arrange, act, and assert. First **arrange** any data that you need to test your code. Next, act or run the code that you're testing. And finally, assert. That is, make sure the code did what it was supposed to.
 
-### BDD Frameworks
+We'll take a look at how to structure tests for better code reuse and readability using the `Quick` and `Nimble` BDD frameworks for swift. 
 
-When we write tests, we are testing the behavior of our code. If you were to test a function that 
-sums two numbers together, you would create some numbers, call the function with those numbers, then write an assertion for what the function _should_ return. Some tests are more complicated than others, but every test will involve setting up some data, running some code that _should_ do something, and asserting that it does that thing.
+Before I start, I want to give a big thanks to Sam Meech who is the author of this screencast. Thanks Sam!
 
-**arrange**, **act**, **assert**.
-
-* **arrange** any data that you need to test your code
-* **act**, run the code that you're testing
-* **assert** the code did what it was supposed to.
-
-And before we even write any tests, we're already thinking about what we're testing. "If I run this function, with this data, it _should_ do this thing. But if I run it with _that_ data, it _should_ do _that_ thing"
-
-The language we use when we're thinking about our tests, is our natural language. And it's consistent between tests. 
-
-BDD testing frameworks are designed to make this repeated process of **arrange**, **act**, **assert**; much easier to implement, and they allow us to write out tests in a much more readable way that is easy to understand.
+Let's dive in.
 
 ## Demo
 
-### Quick and Nimble
+I'll get started by  installing the `Quick` and `Nimble` frameworks. 
 
-Quick and Nimble have been some of the most popular BDD testing frameworks for Swift.
+_Quick_ is the BDD testing framework. It outlines the structure of my tests. Nimble is the assertion library. It gives me readable assertions through a domain specific language.
 
-_Quick_ is the BDD testing framework. It outlines the structure of our tests.
-_Nimble_ is the assertion library. It gives us readable assertions through a dsl.
+First I open my terminal and navigate to my project. Next I navigate to my project and type `pod init`. 
 
-One of my favorite things about BDD frameworks is that they are very consistent between other languages. Here's a BDD framework for Javascript https://mochajs.org/, and here's one for ruby http://rspec.info/
-
-### The App
-
-Let's take a look at the app we'll be testing.
-
-I have the start of a new iOS game. Right now It just has two classes, a `Player` and a `PlayerUpgrader`.
-
-* The `Player` class holds the current state of the player's lives and levels completed. It also exposes methods for reading and writing to these properties.
-
-```swift
-class Player {
-  static let maximumLives = 3
-  
-  private var _lives = 0
-  var lives: Int {
-    return _lives
-  }
-  private var _levelsComplete = 0
-  var levelsComplete: Int {
-    return _levelsComplete
-  }
-  
-  func set(lives: Int) throws {
-    guard lives >= 0 else {
-      throw PlayerError.invalidLives(lives)
-    }
-    _lives = lives
-  }
-  
-  func set(levelsComplete: Int) {
-    _levelsComplete = levelsComplete
-  }
-  
-}
 ```
-
-* The `PlayerUpgrader` class is responsible for any upgrades that happen to the player object. Upgrading the player's lives or levels happens through this class.
-
-```swift
-class PlayerUpgrader {
-  private let player: Player
-  
-  init(player: Player) {
-    self.player = player
-  }
-  
-  func upgradeLives(by lives: Int) throws {
-    let totalLives = player.lives + lives
-    try player.set(lives: min(totalLives, Player.maximumLives))
-  }
-}
+pod init
 ```
-
-### The current tests
-
-There are also some unit tests that have been written for the player upgrader using the built in `XCTest` framework. These tests currently assert that the `upgradeLives` method works as expected. It only upgrades lives in the positive direction and can't give the player more than the maximum allowed lives.
-
-These tests are fine, but there are some obvious downfalls. The main one is that they are a little bit difficult to read, and it's not immediately obvious what's being tested.
-
-Let's write some better tests using `Quick` and `Nimble`
-
-### Installing the frameworks
-
-Let's start by installing `Quick` and `Nimble`. All the information we need about these frameworks can be found at their github pages. If we navigate to `https://www.github.com/quick/quick` and click on the `Documentation` directory, we'll have access to examples, documentation, and installation instructions. I'm going to use cocoapods to install these, so I'll copy and past this code into my local podfile. 
+In the BDDFrameworkTutorialTests target, I add both the Quick and the Nimble framework.
 
 ```ruby
 pod 'Quick'
 pod 'Nimble'
 ```
 
-Remember that we only need these frameworks within our test target.
+When that is done, I save the podfile ans switch back to my terminal and install the pod.
 
-```ruby
-target 'BDDFrameworkTutorialTests' do
-  inherit! :search_paths
-  # Pods for testing
-  pod 'Quick'
-  pod 'Nimble'
-end
+```
+pod install
 ```
 
-Now run `pod install` to install these.
+With the dependencies installed, I open the project to take a look around. 
 
-### Setting up the first test
+The first thing I do is update the project to the reccommended settings and then I build my project for running and for testing.
 
-Great, now that these are installed, let's start testing with them.
+Okay, now for the code.  I have the start of a new iOS game. Right now It just has two classes, a `Player` and a `PlayerUpgrader`.
 
-We're going to be re writing the `PlayerUpgraderTests` using `Quick` and `Nimble`.
+The `Player` class holds the current state of the player's lives and levels completed. It also exposes methods for reading and writing to these properties.
 
-Let's start by creating a new test class that will subclass `QuickSpec` which inherits from `XCTestCase`. We'll call this class `PlayerUpgraderSpec`. It's best practice to end any subclasses of `QuickSpec` with the word `Spec`.
+The `PlayerUpgrader` class is responsible for any upgrades that happen to the player object. Upgrading the player's lives or levels happens through this class.
 
-Now that we have this class, we'll need to import 3 things; the project we're testing `@testable import BDDFrameworkTutorial`, Quick `import Quick`, and Nimble `import Nimble`.
+There are also some unit tests that have been written for the player upgrader using the built in `XCTest` framework. These tests currently assert that the `upgradeLives` method works as expected. It only upgrades lives in the positive direction and can't give the player more than the maximum allowed lives.
+
+These tests are fine, but there are some obvious downfalls. The main one is that they are a little bit difficult to read, and it's not immediately obvious what's being tested.
+
+To get started, I'll create a new test class. This class inherits`QuickSpec` which also inherits from `XCTestCase`. I'll call this class `PlayerUpgraderSpec`. It's best practice to end any subclasses of `QuickSpec` with the word `Spec`.
+
+```
+class PlayerUpgraderSpec: QuickSpec {
+
+}
+
+```
+
+With that in place, I need to import 3 things; the project I'm testing, Quick, and Nimble.
 
 ```swift
 @testable import BDDFrameworkTutorial
@@ -159,26 +86,22 @@ import Quick
 import Nimble
 ```
 
-Every `QuickSpec` subclass needs to override the `spec()` method. This is the method that gets executed when you run your tests. Inside this method is where all the tests for this class will go.
+Every `QuickSpec` subclass needs to override the `spec()` method. This is the method that gets executed when you run your tests.
 
 ```swift
 override func spec() {
 }
 ```
 
-##### Describe
-
-Now that we've gotten the boilerplate code setup, let's write the first test. We're going to test that calling the `upgradeLives` method with the value `0`, will add `0` lives to the player.
-
 Every test follows that same basic pattern, first you use `Quick`'s `describe` function to describe what your testing. This function, accepts a string and a closure.
 
-The string should indicate what we’re testing, in this case it's the `upgradeLives` method. Most of the time, a describe function will be describing a function or method; it's good practice to show this in your tests by adding a dot before the method name. 
 
 ```swift
 describe(".upgradeLives()"
 ```
 
-The next parameter is a closure that accepts no parameters and has no return value.
+The string should indicate what I'm testing, in this case it's the `upgradeLives` method. Most of the time, a describe function will be describing a function or method; it's good practice to show this in your tests by adding a dot before the method name. 
+
 
 ```swift
 describe(".upgradeLives()") {
@@ -186,13 +109,13 @@ describe(".upgradeLives()") {
 }
 ```
 
-Now all the code that tests the `.upgradeLives()` method, should go inside of this closure. This describe function is allowing us to group together all the tests for this method.
+The next parameter is a closure that accepts no parameters and has no return value.
 
-##### Context
+Now all the code that tests the `.upgradeLives()` method, should go inside of this closure. 
 
-Next, we can use a `context` function to group together tests related to a shared situation, condition, or state.
+Next, I use a `context` function to group together tests related to a shared situation, condition, or state.
 
-We are not just testing any call to the `upgradeLives` method, the first test is only interested in when it's called with `0` lives. This test also assumes that the current player has 0 lives. So we can use the `context` function to make these things explicit in plain english. 
+I am not just testing any call to the `upgradeLives` method. The first test is only interested in when it's called with `0` lives. This test also assumes that the current player has 0 lives. So I can use the `context` function to make these things explicit in plain english. 
 
 ```swift
 context("when the player has no lives") {
@@ -203,19 +126,13 @@ context("when the player has no lives") {
 
 When writing the message for context, it's common to start the description with "when" or "with".
 
-Now all the test inside the second context closure will be testing the `upgradeLives` method when it's called with `0` and the player has `0` lives. All we're doing right now is creating some organized structure for writing our tests.
+Now all the test inside the second context closure will be testing the `upgradeLives` method when it's called with `0` and the player has `0` lives. All I'm doing right now is creating some organized structure for writing my tests.
 
-Notice that `context` and `describe` look very similar, that's because they're the same function. `context` is just a typealias of `describe`. But we use `describe` to indicate the thing we’re testing, and `context` to indicate conditions and state. You don't _need_ to add a context function, use them only when it helps organize the tests.
+Notice that `context` and `describe` look very similar, that's because they're the same function. `context` is just a typealias of `describe`. But I use `describe` to indicate the thing I'm testing, and `context` to indicate conditions and state. You don't _need_ to add a context function, use them only when it helps organize the tests.
 
-It's also important to note that describe and context functions can be nested as much as you like. As long as your making your tests more readable and organized, there's no limit to the number of nested closures here.
-
-##### It
-
-Lastly, inside the `describe` or `context`, we’ll add an `it` function. the `it` function also accepts a string and closure, but inside the it's closure, we make our assertions.
+Lastly, inside the `describe` or `context`, I'll add an `it` function. the `it` function also accepts a string and closure, but inside the it's closure, I make my assertions.
 
 The string parameter for the `it` function should provide a human-readable description of the outcome of the test.
-
-For this test, the `upgradeLives` method `"should increment the player's lives by 0"`
 
 ```swift
 describe(".upgradeLives()") {
@@ -230,12 +147,7 @@ describe(".upgradeLives()") {
 
 When writing an it description, it's common to start the description with the word "should". 
 
-##### expect
-
-It is inside the `it` function, that we make our assertions. This is where the actual testing happens.
-
-To test this method, we need to create a new player `let player = Player()`, and a new upgrader with that player `let upgrader = PlayerUpgrader(player: player)`, then we need to try upgrading the lives by 0 `try? upgrader.upgradeLives(by: 0)`.
-
+To test this method, I need to create a new player and a new upgrader with that player. Then I need to try upgrading the lives by 0.
 
 ```swift
 let player = Player()
@@ -243,39 +155,51 @@ let upgrader = PlayerUpgrader(player: player)
 try? upgrader.upgradeLives(by: 0)
 ```
 
-Now we just need to assert that the player still has 0 lives. We could use our old friend `XCTAssert` here, but instead, we're going to write our tests in a much more readable way using `Nimble`. `Nimble` allows us to express expectations using a natural, easily understood language. 
+Now I just need to assert that the player still has 0 lives. I could use my old friend `XCTAssert` here, but instead, I'm going to write my tests in a much more readable way using `Nimble`. `Nimble` allows me to express expectations using a natural, easily understood language. 
 
-First, think about what you're expecting to happen. We expect that `player.lives` will be equal to `0`.
+Using nimble, I can write it like this as 
 
-Using nimble, we can write it like this as `expect(player.lives).to(equal(0))`
+```
+expect(player.lives).to(equal(0))
+```
 
-Now we have a test. If we run the test, we can see that it passes.
+Following red green refactor, I first make the test fail.
 
-#### Summary
+```
+expect(player.lives).to(equal(1))
+```
 
-Take a moment to look at what we've written so far. Read every `describe`, `context`, `it`, and `expect`. It all reads in plain english. Someone who is not a developer could understand what is being tested here. 
+When I run my test, I get a message letting me know the expected result is 1 but got 0.
+
+Now I correct the issue and the run the test again.
+
+```
+expect(player.lives).to(equal(0))
+```
+
+This time I get green and my test is running.
+
+## Camera
+
+As you can see, writing BDD tests are somewhat different from our typical unit tests. 
+
+You can see there are words like `describe`, `context`, `it`, and `expect`. It all reads in plain english. Someone who is not a developer could understand what is being tested here. 
 
 These all print out to the console as well, so if you're running the tests from a command line, you can read what's passing and failing. 
 
-#### More tests
+## Demo
 
-Let's add more tests.
+The next thing I'm going to do in PlayerUpgraderSpec.swift is test that the upgrader adds a certain amount of lives to the player when I pass it a number that doesn't exceed the maximum number of lives.
 
-The next thing we're going to test is that the upgrader adds a certain amount of lives to the player when we pass it a number that doesn't exceed the maximum number of lives.
-
-So when the player has 0 lives, and `context("with an upgrade amount that is less than the maximum lives") {` then `it("should increment the player's lives by upgrade amount") {`
+So when the player has 0 lives, and  with an upgrade amount that is less than the maximum lives then it should increment the player's lives by upgrade amount
 
 ```swift
 describe(".upgradeLives()") {
     context("when the player has no lives") {
       context("with an upgrade amount of 0") {
-        it("should increment the player's lives by 0") {
-          let player = Player()
-          let upgrader = PlayerUpgrader(player: player)
-          try? upgrader.upgradeLives(by: 0)
-          expect(player.lives).to(equal(0))
-        }
+       ... 
       }
+      // add here
       context("with an upgrade amount that is less than the maximum lives") {
         it("should increment the player's lives by upgrade amount") {
         }
@@ -287,15 +211,16 @@ describe(".upgradeLives()") {
 
 Again, I need a new `player` and `playerUpgrader` object, but I don't want to duplicate code here, what I need to do is move this code to a setup function that runs before each test.
 
-Using `Quick` we can add a `beforeEach` function at the top of the spec function to create a new player and upgrader
+Using `Quick` I can add a `beforeEach` function at the top of the spec function to create a new player and upgrader
 
 ```swift
-var player: Player!
-var upgrader: PlayerUpgrader!
-beforeEach {
-  player = Player()
-  upgrader = PlayerUpgrader(player: player)
-}
+override func spec() {
+  var player: Player!
+  var upgrader: PlayerUpgrader!
+  beforeEach {
+    player = Player()
+    upgrader = PlayerUpgrader(player: player)
+  }
 ```
 
 This will get executed before each test inside the spec method.
@@ -303,33 +228,42 @@ This will get executed before each test inside the spec method.
 Now I can remove the player and upgrader setup code from my test
 
 ```swift
+remove
 let player = Player()
 let upgrader = PlayerUpgrader(player: player)
 ```
 
 And continue with the next test.
 
-We will be calling the `upgradeLives` method will a value larger than 0 but less than the maximum lives, `1` works. `try? upgrader.upgradeLives(by: 1)` and now we `expect(player.lives).to(equal(1))`
+I will be calling the `upgradeLives` method and to get the test to fail, I set the equal amount to be a 100 
 
-Run the tests again and they should pass.
+```
+try? upgrader.upgradeLives(by: 1)
+expect(player.lives).to(equal(100))`
+```
+When I run the test, it fails as expected. 
 
+```
+expect(player.lives).to(equal(100))`
+```
 
-The next thing we're going to test is that if the player already has the maximum number of lives, then we can't upgrade their lives any more.
+Now, I provide the expected result and it passes.
 
-So instead of when the player has no lives, `context("when the player's lives are full") {` the upgrade method `it("should not change the value of the player's lives") {`
+The next thing I'm going to test is that if the player already has the maximum number of lives, then I can't upgrade their lives any more.
 
 ```swift
+context("when the player has no lives") {
+  ...
+}
 context("when the player's lives are full") {
   it("should not change the value of the player's lives") {
   }
 }
 ```
 
-So the first thing we have to do here is modify the user so that its lives are set to the maximum number of lives. And we want this to happen for every test inside the `context("when the player's lives are full") {` closure. 
+So the first thing I have to do here is modify the user so that its lives are set to the maximum number of lives. And I want this to happen for every test inside the `when the player's lives are full` closure. 
 
-We've used the `beforeEach` function to run code before every single test, but we can also add a `beforeEach` function to any `describe` or `context` closure too. That will run code before every test inside that specific closure. 
-
-If we add a `beforeEach` function to this closure 
+I've used the `beforeEach` function to run code before every single test, but I can also add a `beforeEach` function to any `describe` or `context` closure too. That will run code before every test inside that specific closure. 
 
 ```swift
 beforeEach {
@@ -337,7 +271,7 @@ beforeEach {
 }
 ```
 
-and set the player's lives to the maximum lives
+Using beforeEach, I set the player's lives to the maximum lives
 
 ```swift
 beforeEach {
@@ -345,49 +279,47 @@ beforeEach {
 }
 ```
 
-then that code will be executed after the `beforeEach` in the outer score, but before any `it` functions inside this `context`
+That code will be executed after the `beforeEach` in the outer score, but before any `it` functions inside this `context`
 
-By the time the code inside this `it` function runs, the player will have the maximum number of lives. So we now just need to try upgrading the lives `try? upgrader.upgradeLives(by: 1)` and we expect that the player's lives will not change `expect(player.lives).to(equal(Player.maximumLives))`
+By the time the code inside this `it` function runs, the player will have the maximum number of lives. So I now just need to try upgrading the lives and I expect that the player's lives will not change.
 
 ```swift
 it("should not change the value of the player's lives") {
   try? upgrader.upgradeLives(by: 1)
-  expect(player.lives).to(equal(Player.maximumLives))
+  expect(player.lives).to(equal(Player.maximumLives-1))
 }
 ```
 
-#### Custom Functions
+First I test the red state, and as expected, it fails. I correct the issue and as expected, the test goes green.
+
+```
+expect(player.lives).to(equal(Player.maximumLives))
+```
+
+## Camera
 
 You may have noticed that there is some code duplication here. Every test is calling the `upgradeLives` method and then expecting `player.lives` to equal something. Most of the code is the same, it's just the values that are changing. So how can we remove this duplication?
 
 An important thing to remember when writing tests, weather you're using a BDD framework or not, is that you're still just writing normal swift code. So how do you solve code duplcation in a normal swift app? Move the duplicate code to a function.
 
-Let's create a new function inside the `upgradeLives` description. We'll call it ` func expectUser(toHaveLives expectedLives: Int, afterUpgradingLives upgradeLives: Int)`. Then we can put the duplicate code in here
+## Demo
+
+
+Back in PlayerUpgraderSpec.swift, I'm going to create a new function inside the `upgradeLives` description. I'll call it expectUser toHaveLives and I can put the duplicate code in here
 
 ```swift
-func expectUser(toHaveLives expectedLives: Int, afterUpgradingLives upgradeLives: Int) {
+describe(".upgradeLives()") {
+  func expectUser(toHaveLives expectedLives: Int,   afterUpgradingLives upgradeLives: Int) {
   try? upgrader.upgradeLives(by: upgradeLives)
   expect(player.lives).to(equal(expectedLives))
 }
 ```
 
-and call this function from each of our tests.
+and call this function from each of my tests.
 
 
 ```swift
-describe(".upgradeLives()") {
-      
-  func expectUser(toHaveLives expectedLives: Int, afterUpgradingLives upgradeLives: Int) {
-    try? upgrader.upgradeLives(by: upgradeLives)
-    expect(player.lives).to(equal(expectedLives))
-  }
-  
-  context("when the player has no lives") {
-    context("with an upgrade amount of 0") {
-      it("should increment the player's lives by 0") {
-        expectUser(toHaveLives: 0, afterUpgradingLives: 0)
-      }
-    }
+
     
     context("with an upgrade amount that is less than the maximum lives") {
       it("should increment the player's lives by upgrade amount") {
@@ -407,6 +339,8 @@ describe(".upgradeLives()") {
   }
 }
 ```
+
+And now, I have my tests running like before only without the code duplication. Good stuff all around.
 
 ## Conclusion
 
